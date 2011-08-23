@@ -101,18 +101,17 @@ class EAN13Encoder:
         # check digit is the number that can be added to the total
         # to get to a multiple of 10
         return (10 - (total % 10)) % 10
-    def get_imagedata( self, bar_width=3, use_full_guards=True ):
+
+    def get_imagedata( self, bar_width=3, use_full_guards=True, include_text=True ):
         """Write the barcode out to a PNG bytestream"""
         barcode = EAN13Renderer( self.full_code, self.left_bars,
                 self.right_bars, GUARDS )
-        imagedata = barcode.get_imagedata( bar_width, use_full_guards )
+        imagedata = barcode.get_imagedata( bar_width, use_full_guards, include_text )
         self.height = barcode.height
         self.width = barcode.width
         return imagedata
 
-    def save( self, filename, bar_width=3, use_full_guards=True ):
+    def save( self, filename, bar_width=3, use_full_guards=True, include_text=True ):
         """Write the barcode out to an image file"""
-        EAN13Renderer( self.full_code,
-                        self.left_bars,
-                        self.right_bars,
-                        GUARDS ).write_file( filename, bar_width, use_full_guards )
+        renderer = EAN13Renderer( self.full_code, self.left_bars, self.right_bars, GUARDS )
+        renderer.write_file( filename, bar_width, use_full_guards, include_text )

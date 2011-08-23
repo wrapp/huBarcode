@@ -33,7 +33,7 @@ class EAN13Renderer:
         self.right_bars = right_bars
         self.guards = guards
 
-    def get_pilimage(self, bar_width, use_full_guards):
+    def get_pilimage(self, bar_width, use_full_guards, include_text):
         def sum_len(total, item):
             """add the length of a given item to the total"""
             return total + len(item)
@@ -80,34 +80,36 @@ class EAN13Renderer:
         writer.write_bars(self.guards[2], full=use_full_guards)
 
         # Draw the text
-        font_size = font_sizes.get(bar_width, 24)
+        if include_text:
+            font_size = font_sizes.get(bar_width, 24)
 
-        # Locate the font file relative to the module
-        eandir, _ = os.path.split(__file__)
-        rootdir, _ = os.path.split(eandir)
-        fontfile = os.path.join(rootdir, "fonts", "courR%02d.pil" % font_size)
+            # Locate the font file relative to the module
+            eandir, _ = os.path.split(__file__)
+            rootdir, _ = os.path.split(eandir)
+            fontfile = os.path.join(rootdir, "fonts", "courR%02d.pil" % font_size)
 
-        font = ImageFont.load_path(fontfile)
-        draw = ImageDraw.Draw(img)
-        draw.text((1*bar_width, int(image_height*0.7)),
-                   self.code[0], font=font)
-        draw.text((16*bar_width, int(image_height*0.8)),
-                   self.code[1:7], font=font)
-        draw.text((63*bar_width, int(image_height*0.8)), self.code[7:], font=font)
+            font = ImageFont.load_path(fontfile)
+            draw = ImageDraw.Draw(img)
+            draw.text((1*bar_width, int(image_height*0.7)),
+                       self.code[0], font=font)
+            draw.text((16*bar_width, int(image_height*0.8)),
+                       self.code[1:7], font=font)
+            draw.text((63*bar_width, int(image_height*0.8)), self.code[7:], font=font)
+
         self.width = image_width
         self.height = image_height
         return img
 
-    def write_file(self, filename, bar_width, use_full_guards):
+    def write_file(self, filename, bar_width, use_full_guards, include_text):
         """Write barcode data out to image file
         filename - the name of the image file
         bar_width - the desired width of each bar"""
-        img = self.get_pilimage(bar_width, use_full_guards)
+        img = self.get_pilimage(bar_width, use_full_guards, include_text)
         img.save(filename, "PNG")
 
-    def get_imagedata( self, bar_width, use_full_guards ):
+    def get_imagedata( self, bar_width, use_full_guards, include_text ):
         """Write the matrix out as PNG to a bytestream"""
         buffer = StringIO()
-        img = self.get_pilimage(bar_width, use_full_guards)
+        img = self.get_pilimage(bar_width, use_full_guards, include_text )
         img.save(buffer, "PNG")
         return buffer.getvalue()

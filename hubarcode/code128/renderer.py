@@ -35,7 +35,7 @@ class Code128Renderer:
         self.image_width = None
         self.image_height = None
 
-    def get_pilimage( self, bar_width ):
+    def get_pilimage( self, bar_width, include_text ):
         """Return the barcode as a PIL object"""
 
         # 11 bars per character, plus the stop
@@ -50,15 +50,18 @@ class Code128Renderer:
         c128dir, _ = os.path.split( __file__ )
         rootdir, _ = os.path.split( c128dir )
 
-        default_fontsize = FONT_SIZES.get(bar_width, 24)
-        fontsize = self.options.get('ttf_fontsize', default_fontsize)
-        ttf_font = self.options.get('ttf_font')
-        if ttf_font:
-            font = ImageFont.truetype( ttf_font, fontsize )
+        if include_text:
+            default_fontsize = FONT_SIZES.get(bar_width, 24)
+            fontsize = self.options.get('ttf_fontsize', default_fontsize)
+            ttf_font = self.options.get('ttf_font')
+            if ttf_font:
+                font = ImageFont.truetype( ttf_font, fontsize )
+            else:
+                fontfile = os.path.join( rootdir, "fonts",
+                    "courR%02d.pil" % fontsize )
+                font = ImageFont.load_path( fontfile )
         else:
-            fontfile = os.path.join( rootdir, "fonts",
-                "courR%02d.pil" % fontsize )
-            font = ImageFont.load_path( fontfile )
+            fontsize = 0
 
         # Total image width
         self.image_width = (2 * quiet_width) + (num_bars * bar_width)
@@ -104,23 +107,24 @@ class Code128Renderer:
         writer.write_bars( self.bars )
 
         # Draw the text
-        draw = ImageDraw.Draw( img )
-        xtextwidth = font.getsize(self.text)[0]
-        xtextpos = self.image_width/2 - (xtextwidth/2)
-        ytextpos = bar_height + label_border
-        draw.text( (xtextpos, ytextpos), self.text, font=font )
+        if include_text:
+            draw = ImageDraw.Draw( img )
+            xtextwidth = font.getsize(self.text)[0]
+            xtextpos = self.image_width/2 - (xtextwidth/2)
+            ytextpos = bar_height + label_border
+            draw.text( (xtextpos, ytextpos), self.text, font=font )
         return img
 
-    def write_file( self, filename, bar_width):
+    def write_file( self, filename, bar_width, include_text ):
         """Write barcode data out to image file
         filename - the name of the image file or an file object
         bar_width - the desired width in pixels of each bar"""
-        img = self.get_pilimage( bar_width )
+        img = self.get_pilimage( bar_width, include_text )
         img.save( filename, 'PNG')
 
-    def get_imagedata( self, bar_width ):
+    def get_imagedata( self, bar_width, include_text ):
         """Write the matrix out as PNG to an bytestream"""
         imagedata = StringIO()
-        img = self.get_pilimage( bar_width )
+        img = self.get_pilimage( bar_width, include_text )
         img.save( imagedata, "PNG" )
         return imagedata.getvalue()
