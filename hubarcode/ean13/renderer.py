@@ -33,7 +33,7 @@ class EAN13Renderer:
         self.right_bars = right_bars
         self.guards = guards
 
-    def get_pilimage(self, bar_width):
+    def get_pilimage(self, bar_width, use_full_guards):
         def sum_len(total, item):
             """add the length of a given item to the total"""
             return total + len(item)
@@ -73,11 +73,11 @@ class EAN13Renderer:
 
         # Draw the bars
         writer = BarWriter(img)
-        writer.write_bars(self.guards[0], full=True)
+        writer.write_bars(self.guards[0], full=use_full_guards)
         writer.write_bars(self.left_bars)
-        writer.write_bars(self.guards[1], full=True)
+        writer.write_bars(self.guards[1], full=use_full_guards)
         writer.write_bars(self.right_bars)
-        writer.write_bars(self.guards[2], full=True)
+        writer.write_bars(self.guards[2], full=use_full_guards)
 
         # Draw the text
         font_size = font_sizes.get(bar_width, 24)
@@ -98,16 +98,16 @@ class EAN13Renderer:
         self.height = image_height
         return img
 
-    def write_file(self, filename, bar_width):
+    def write_file(self, filename, bar_width, use_full_guards):
         """Write barcode data out to image file
         filename - the name of the image file
         bar_width - the desired width of each bar"""
-        img = self.get_pilimage(bar_width)
+        img = self.get_pilimage(bar_width, use_full_guards)
         img.save(filename, "PNG")
 
-    def get_imagedata( self, bar_width ):
+    def get_imagedata( self, bar_width, use_full_guards ):
         """Write the matrix out as PNG to a bytestream"""
         buffer = StringIO()
-        img = self.get_pilimage(bar_width)
+        img = self.get_pilimage(bar_width, use_full_guards)
         img.save(buffer, "PNG")
         return buffer.getvalue()
