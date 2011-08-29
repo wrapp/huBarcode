@@ -33,14 +33,18 @@ class EAN13Renderer:
         self.right_bars = right_bars
         self.guards = guards
 
-    def get_pilimage(self, bar_width, use_full_guards, include_text):
+    def get_pilimage(self, bar_width, use_full_guards, include_text, use_padding=False):
         def sum_len(total, item):
             """add the length of a given item to the total"""
             return total + len(item)
 
         num_bars = (7 * 12) + reduce(sum_len, self.guards, 0)
 
-        quiet_width = bar_width * 9
+        if use_padding:
+            quiet_width = bar_width * 9
+        else:
+            quiet_width = 0
+
         image_width = (2 * quiet_width) + (num_bars * bar_width)
         image_height = image_width / 2
 
@@ -58,7 +62,7 @@ class EAN13Renderer:
                 if the value is 1, otherwise move on silently"""
 
                 # only write anything to the image if bar value is 1
-                bar_height = int(image_height * (full and 0.9 or 0.8))
+                bar_height = int(image_height * (full and 1.0 or 0.8))
                 if value == 1:
                     for ypos in range(self.symbol_top, bar_height):
                         for xpos in range(self.current_x, \
@@ -73,11 +77,11 @@ class EAN13Renderer:
 
         # Draw the bars
         writer = BarWriter(img)
-        writer.write_bars(self.guards[0], full=use_full_guards)
-        writer.write_bars(self.left_bars)
-        writer.write_bars(self.guards[1], full=use_full_guards)
-        writer.write_bars(self.right_bars)
-        writer.write_bars(self.guards[2], full=use_full_guards)
+        writer.write_bars(self.guards[0], full=use_full_guards or not use_padding)
+        writer.write_bars(self.left_bars, full=not use_padding)
+        writer.write_bars(self.guards[1], full=use_full_guards or not use_padding)
+        writer.write_bars(self.right_bars, full=not use_padding)
+        writer.write_bars(self.guards[2], full=use_full_guards or not use_padding)
 
         # Draw the text
         if include_text:

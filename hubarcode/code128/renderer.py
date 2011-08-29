@@ -44,7 +44,8 @@ class Code128Renderer:
         log.debug( "There are %d bars", num_bars )
 
         # Quiet zone is 10 bar widths on each side
-        quiet_width = bar_width * 10
+        #quiet_width = bar_width * 10
+        quiet_width = 0
 
         # Locate and load the font file relative to the module
         c128dir, _ = os.path.split( __file__ )
